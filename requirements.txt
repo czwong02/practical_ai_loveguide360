@@ -1,0 +1,3 @@
+jamaibase
+flask
+python-dotenv

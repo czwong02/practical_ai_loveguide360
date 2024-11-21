@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <title>LoveGuide360</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>LoveGuide360</h1>
+        <p>Ask for personalized advice based on your relationship!</p>
+      </header>
+
+      <div id="user-info">
+        <p>
+          Based on the information you provided, we're ready to offer tailored
+          advice just for you.
+        </p>
+        <p>Your Gender: {{ gender }}</p>
+        <p>Your Age Group: {{ age_group }}</p>
+        <p>Partner's Gender: {{ partner_gender }}</p>
+        <p>Partner's Age Group: {{ partner_age_group }}</p>
+      </div>
+
+      <!-- Category Dropdown -->
+      <form id="adviceForm" action="/process_conflict" method="POST">
+        <label for="category">Choose a Category:</label>
+        <select id="category" name="category" required>
+          <option value="" disabled selected>Select a category</option>
+          <option value="conflict">Relationship Conflict</option>
+          <option value="romance">Romantic Gestures</option>
+          <option value="long_distance">Long-Distance Relationship</option>
+          <option value="growth">Personal Growth and Relationship</option>
+          <option value="dating">Dating Advice</option>
+          <option value="communication">Communication Challenges</option>
+          <option value="trust">Trust Issues</option>
+        </select>
+
+        <input type="hidden" name="gender" value="{{ gender }}">
+        <input type="hidden" name="age_group" value="{{ age_group }}">
+        <input type="hidden" name="partner_gender" value="{{ partner_gender }}">
+        <input type="hidden" name="partner_age_group" value="{{ partner_age_group }}">
+
+        <!-- Dynamic Metrics -->
+        <div id="metrics">
+          <!-- Metrics will dynamically load here -->
+        </div>
+
+        <button type="submit" id="askButton">Get Advice</button>
+
+        <!-- <div class="return-button">
+          <a href="/result.html" class="button-link"> -->
+            <!-- <button type="submit" id="askButton">Get Advice</button> -->
+          <!-- </a> -->
+        </div>
+      </form>
+
+      <!-- Loading Spinner (Initially Hidden) -->
+      <div id="loading-screen" class="loading-screen" style="display: none;">
+        <div class="spinner"></div>
+        <p>Loading, please wait...</p>
+      </div>
+
+      <!-- Error Message (Hidden by default) -->
+      <div id="error-message" style="color: red; display: none">
+        <p>Please fill out all fields before submitting!</p>
+      </div>
+
+    </div>
+
+    <script>
+      const categoryDropdown = document.getElementById("category");
+      const metricsDiv = document.getElementById("metrics");
+      const questionTextarea = document.getElementById("question");
+
+      // Metrics Template per Category
+      const metricsTemplates = {
+        conflict: `
+                <label>Years Together:</label>
+                <input type="number" id="years" name="years" placeholder="Enter years" required>
+                <label>Love Language:</label>
+                <select id="love_language" name="love_language" required>
+                    <option value="words_of_affirmation">Words of Affirmation</option>
+                    <option value="acts_of_service">Acts of Service</option>
+                    <option value="receiving_gifts">Receiving Gifts</option>
+                    <option value="quality_time">Quality Time</option>
+                    <option value="physical_touch">Physical Touch</option>
+                </select>
+                <label>Conflict Type:</label>
+                <input type="text" id="conflict_type" name="conflict_type" placeholder="e.g., finances, communication" required>
+                <label>Conflict Frequency:</label>
+                <select id="conflict_frequency" name="conflict_frequency" required>
+                    <option value="daily">Daily</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+                <label>Partner's Temperament:</label>
+                <input type="text" id="partner_temperament" name="partner_temperament" placeholder="e.g., calm, reactive" required>
+                <label>Your Temperament:</label>
+                <input type="text" id="your_temperament" name="your_temperament" placeholder="e.g., emotional, logical" required>
+            `,
+        romance: `
+                <label>Partner's Zodiac Sign:</label>
+                <input type="text" id="zodiac" name="zodiac" placeholder="Enter zodiac" required>
+                <label>Special Occasion:</label>
+                <input type="text" id="occasion" name="occasion" placeholder="e.g., Birthday, Anniversary" required>
+                <label>Partner's Preferences:</label>
+                <input type="text" id="preferences" name="preferences" placeholder="e.g., favorite foods, hobbies" required>
+                <label>Budget:</label>
+                <select id="budget" name="budget" required>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <label>Romantic Environment:</label>
+                <select id="environment" name="environment" required>
+                    <option value="outdoor">Outdoor</option>
+                    <option value="cozy_home">Cozy Home</option>
+                    <option value="luxury">Luxury Setting</option>
+                </select>
+                <label>Memorable Past Gestures:</label>
+                <textarea id="past_gestures" name="past_gestures" rows="2" placeholder="Describe any past successful gestures" required></textarea>
+            `,
+        long_distance: `
+                <label>Time Zone Difference (hours):</label>
+                <input type="number" id="time_difference" name="time_difference" placeholder="Enter hours" required>
+                <label>Preferred Communication Style:</label>
+                <select id="communication_style" name="communication_style" required>
+                    <option value="text">Text</option>
+                    <option value="video_call">Video Call</option>
+                    <option value="phone_call">Phone Call</option>
+                </select>
+                <label>Visit Frequency:</label>
+                <input type="text" id="visit_frequency" name="visit_frequency" placeholder="e.g., weekly, monthly" required>
+                <label>Emotional Challenges:</label>
+                <textarea id="emotional_challenges" name="emotional_challenges" rows="2" placeholder="e.g., loneliness, scheduling conflicts" required></textarea>
+                <label>Duration of Separation:</label>
+                <input type="text" id="duration_separation" name="duration_separation" placeholder="e.g., 6 months" required>
+                <label>Partner's Availability:</label>
+                <textarea id="partner_availability" name="partner_availability" rows="2" placeholder="e.g., busy work schedule" required></textarea>
+            `,
+        growth: `
+                <label>Your Zodiac Sign:</label>
+                <input type="text" id="your_zodiac" name="your_zodiac" placeholder="Enter your zodiac" required>
+                <label>Partner's Zodiac Sign:</label>
+                <input type="text" id="partner_zodiac" name="partner_zodiac" placeholder="Enter partner's zodiac" required>
+                <label>Personal Growth Goals:</label>
+                <textarea id="your_goals" name="your_goals" rows="2" placeholder="e.g., self-confidence, patience" required></textarea>
+                <label>Partner's Growth Goals:</label>
+                <textarea id="partner_goals" name="partner_goals" rows="2" placeholder="e.g., improving communication" required></textarea>
+                <label>Shared Hobbies:</label>
+                <textarea id="shared_hobbies" name="shared_hobbies" rows="2" placeholder="e.g., hiking, cooking" required></textarea>
+                <label>Therapy/Counseling History:</label>
+                <textarea id="counseling_history" name="counseling_history" rows="2" placeholder="e.g., couple therapy attempts" required></textarea>
+            `,
+        dating: `
+                <label>Date Type:</label>
+                <select id="date_type" name="date_type" required>
+                    <option value="casual">Casual</option>
+                    <option value="romantic">Romantic</option>
+                    <option value="adventurous">Adventurous</option>
+                </select>
+                <label>Location Preference:</label>
+                <input type="text" id="location_preference" name="location_preference" placeholder="e.g., park, cafe" required>
+                <label>First Date?</label>
+                <select id="first_date" name="first_date" required>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                <label>Previous Experiences:</label>
+                <textarea id="previous_experiences" name="previous_experiences" rows="2" placeholder="e.g., met at a friend's party" required></textarea>
+                <label>Chemistry Level:</label>
+                <input type="text" id="chemistry_level" name="chemistry_level" placeholder="e.g., strong, moderate" required>
+                <label>Partner's Hobbies:</label>
+                <textarea id="partner_hobbies" name="partner_hobbies" rows="2" placeholder="e.g., photography, traveling" required></textarea>
+            `,
+        communication: `
+                <label>Common Argument Topics:</label>
+                <input type="text" id="argument_topic" name="argument_topic" placeholder="e.g., finances, time" required>
+                <label>Preferred Communication Style:</label>
+                <select id="communication_style" name="communication_style" required>
+                    <option value="text">Text</option>
+                    <option value="face_to_face">Face to Face</option>
+                    <option value="mediated">Mediated (Counselor/Facilitator)</option>
+                </select>
+                <label>Partner's Listening Skills:</label>
+                <input type="text" id="partner_listening" name="partner_listening" placeholder="e.g., active, passive" required>
+                <label>Your Listening Skills:</label>
+                <input type="text" id="your_listening" name="your_listening" placeholder="e.g., attentive, distracted" required>
+                <label>Argument Duration:</label>
+                <input type="text" id="argument_duration" name="argument_duration" placeholder="e.g., 10 minutes, hours" required>
+                <label>Conflict Resolution History:</label>
+                <textarea id="conflict_resolution" name="conflict_resolution" rows="2" placeholder="e.g., avoidance, apologies" required></textarea>
+            `,
+        trust: `
+                <label>Trust Issue Type:</label>
+                <select id="trust_type" name="trust_type" required>
+                    <option value="jealousy">Jealousy</option>
+                    <option value="dishonesty">Dishonesty</option>
+                    <option value="infidelity">Infidelity</option>
+                    <option value="past_trauma">Past Trauma</option>
+                </select>
+                <label>Incident History:</label>
+                <textarea id="incident_history" name="incident_history" rows="2" placeholder="Describe the incident(s)" required></textarea>
+                <label>Time Since Issue:</label>
+                <input type="text" id="time_since" name="time_since" placeholder="e.g., 6 months, 1 year" required>
+                <label>Forgiveness Progress:</label>
+                <textarea id="forgiveness_progress" name="forgiveness_progress" rows="2" placeholder="Describe progress made" required></textarea>
+                <label>Communication Efforts:</label>
+                <textarea id="communication_efforts" name="communication_efforts" rows="2" placeholder="Steps taken to rebuild trust" required></textarea>
+                <label>Partner's Behavior Changes:</label>
+                <textarea id="partner_behavior" name="partner_behavior" rows="2" placeholder="Describe any changes" required></textarea>
+            `,
+      };
+
+      // Update Metrics and Prompt
+      categoryDropdown.addEventListener("change", () => {
+        const selectedCategory = categoryDropdown.value;
+        metricsDiv.innerHTML = metricsTemplates[selectedCategory] || "";
+      });
+
+      const form = document.getElementById("adviceForm");
+      const errorMessage = document.getElementById("error-message");
+      const loadingScreen = document.getElementById("loading-screen");
+
+      // Utility function to check if a field is empty
+      const isEmpty = (field) => !field || field.value.trim() === "";
+
+      // Function to validate fields for the selected category
+      function validateFields(selectedCategory) {
+        const validationRules = {
+          conflict: [
+            "years",
+            "love_language",
+            "conflict_type",
+            "conflict_frequency",
+            "partner_temperament",
+            "your_temperament",
+          ],
+          romance: [
+            "zodiac",
+            "occasion",
+            "preferences",
+            "budget",
+            "environment",
+            "past_gestures",
+          ],
+          long_distance: [
+            "time_difference",
+            "communication_style",
+            "visit_frequency",
+            "emotional_challenges",
+            "duration_separation",
+            "partner_availability",
+          ],
+          growth: [
+            "your_zodiac",
+            "partner_zodiac",
+            "your_goals",
+            "partner_goals",
+            "shared_hobbies",
+            "counseling_history",
+          ],
+          dating: [
+            "date_type",
+            "location_preference",
+            "first_date",
+            "previous_experiences",
+            "chemistry_level",
+            "partner_hobbies",
+          ],
+          communication: [
+            "argument_topic",
+            "communication_style",
+            "partner_listening",
+            "your_listening",
+            "argument_duration",
+            "conflict_resolution",
+          ],
+          trust: [
+            "trust_type",
+            "incident_history",
+            "time_since",
+            "forgiveness_progress",
+            "communication_efforts",
+            "partner_behavior",
+          ],
+        };
+
+        // Get the list of required fields for the selected category
+        const requiredFields = validationRules[selectedCategory] || [];
+
+        // Check each field for emptiness
+        for (const fieldId of requiredFields) {
+          const field = document.getElementById(fieldId);
+          if (isEmpty(field)) {
+            return false;
+          }
+        }
+        return true;
+      }
+
+      // Form submission event
+      form.addEventListener("submit", function (event) {
+        const selectedCategory = categoryDropdown.value;
+
+        // Check if a category is selected and fields are valid
+        if (!selectedCategory || !validateFields(selectedCategory)) {
+          event.preventDefault();
+          errorMessage.style.display = "block"; // Show error message
+        } else {
+
+          loadingScreen.style.display = "flex";
+          errorMessage.style.display = "none"; // Hide error message
+
+          setTimeout(() => {
+            loadingScreen.style.display = "none"; // Hide the loading screen
+          }, 2000);
+        }
+      });
+    </script>
+  </body>
+</html>

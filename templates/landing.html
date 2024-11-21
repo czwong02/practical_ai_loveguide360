@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <title>Welcome to LoveGuide360</title>
+  </head>
+  <body>
+    <div class="landing-container">
+      <header>
+        <h1>Welcome to LoveGuide360</h1>
+        <p>Ask for personalized advice based on your relationship!</p>
+      </header>
+
+      <form id="user-info-form" action="/index.html" method="GET">
+        <!-- Gender Selection -->
+        <div class="form-group">
+          <label for="gender">Your Gender:</label>
+          <select id="gender" name="gender" required>
+            <option value="" disabled selected>Select your gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non_binary">Non-binary</option>
+            <option value="prefer_not_to_say">Prefer not to say</option>
+          </select>
+        </div>
+
+        <!-- Age Group Selection -->
+        <div class="form-group">
+          <label for="age_group">Your Age Group:</label>
+          <select id="age_group" name="age_group" required>
+            <option value="" disabled selected>Select your age group</option>
+            <option value="18-24">18-24</option>
+            <option value="25-30">25-30</option>
+            <option value="31-40">31-40</option>
+            <option value="41-50">41-50</option>
+            <option value="51+">51+</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="partner_gender">Partner's Gender:</label>
+          <select id="partner_gender" name="partner_gender" required>
+            <option value="" disabled selected>Select your gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="non_binary">Non-binary</option>
+            <option value="prefer_not_to_say">Prefer not to say</option>
+          </select>
+        </div>
+
+        <!-- Age Group Selection -->
+        <div class="form-group">
+          <label for="partner_age_group">Partner's Age Group:</label>
+          <select id="partner_age_group" name="partner_age_group" required>
+            <option value="" disabled selected>Select your age group</option>
+            <option value="18-24">18-24</option>
+            <option value="25-30">25-30</option>
+            <option value="31-40">31-40</option>
+            <option value="41-50">41-50</option>
+            <option value="51+">51+</option>
+          </select>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submitButton">Proceed</button>
+      </form>
+
+      <!-- Error Message (Hidden by default) -->
+      <div id="error-message" style="color: red; display: none">
+        <p>Please fill out all fields before submitting!</p>
+      </div>
+    </div>
+
+    <script>
+      // Get the form and error message elements
+      const form = document.getElementById("user-info-form");
+      const errorMessage = document.getElementById("error-message");
+      // Form submission event handler
+      form.addEventListener("submit", function (event) {
+        // Check if both the gender and age group are selected
+        const gender = document.getElementById("gender").value;
+        const ageGroup = document.getElementById("age_group").value;
+        const partner_gender = document.getElementById("partner_gender").value;
+        const partner_ageGroup = document.getElementById("partner_age_group").value;
+
+        // If either field is not selected, show the error message and prevent form submission
+        if (!gender || !ageGroup || !partner_ageGroup || !partner_gender) {
+          event.preventDefault();
+          errorMessage.style.display = "block"; // Show error message
+        } else {
+          errorMessage.style.display = "none"; // Hide error message
+          window.location.href = `/index.html?gender=${gender}&age_group=${ageGroup}&partner_gender=${partner_gender}&partner_age_group=${partner_ageGroup}`;
+        }
+      });
+    </script>
+  </body>
+</html>

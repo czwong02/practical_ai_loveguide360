@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <title>Your Romantic Advice</title>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Welcome to LoveGuide360</h1>
+        <p>Ask for personalized advice based on your relationship!</p>
+      </header>
+
+      <!-- User Info Section -->
+      <div id="user-info">
+        <p>
+          Thank you for sharing your details! Based on the information you've
+          provided, here's some personalized advice
+        </p>
+      </div>
+
+      <h2>Relationship Advice Results</h2>
+
+      {% if result %}
+      <div class="result-box">
+        <div class="tabs">
+          <div class="tab active" data-tab="summary">
+            <span class="icon">📋</span>
+            <span class="text">Summary</span>
+          </div>
+          <div class="tab" data-tab="challenges">
+            <span class="icon">⚠️</span>
+            <span class="text">Challenges</span>
+          </div>
+          <div class="tab" data-tab="insights">
+            <span class="icon">💡</span>
+            <span class="text">
+              {% if category == "romance" %} Romantic Gesture Ideas {% else %}
+              Empathetic Insights {% endif %}
+            </span>
+          </div>
+          <div class="tab" data-tab="strategies">
+            <span class="icon">🛠️</span>
+            <span class="text">
+              {% if category == "romance" %} Strategies {% else %} Strategies
+              for Improvement {% endif %}</span
+            >
+          </div>
+          <div class="tab" data-tab="outcomes">
+            <span class="icon">🌟</span>
+            <span class="text">Expected Outcomes</span>
+          </div>
+          <div class="tab" data-tab="action">
+            <span class="icon">📞</span>
+            <span class="text">Call to Action</span>
+          </div>
+        </div>
+
+        <div id="summary" class="tab-content active">
+          <p>{{ result['summary'] }}</p>
+        </div>
+        <div id="challenges" class="tab-content">
+          <p>{{ result['challenges'] }}</p>
+        </div>
+        <div id="insights" class="tab-content">
+          {% if category == "romance" %}
+          <p>{{ result['romantic_gesture_ideas'] }}</p>
+          {% else %}
+          <p>{{ result['empathetic_insights'] }}</p>
+          {% endif %}
+        </div>
+        <div id="strategies" class="tab-content">
+          {% if category == "romance" %}
+          <p>{{ result['strategies'] }}</p>
+          {% else %}
+          <p>{{ result['strategies_for_improvement'] }}</p>
+          {% endif %}
+        </div>
+        <div id="outcomes" class="tab-content">
+          <p>{{ result['expected_outcomes'] }}</p>
+        </div>
+        <div id="action" class="tab-content">
+          <p>{{ result['call_to_action'] }}</p>
+        </div>
+      </div>
+      {% else %}
+
+      <div class="alert alert-warning" role="alert">
+        No results were returned. Please try again with different inputs.
+      </div>
+      {% endif %}
+
+      <div class="return-button">
+        <a href="/" class="button-link">
+          <button>Close</button>
+        </a>
+      </div>
+    </div>
+
+    <script>
+      const tabs = document.querySelectorAll(".tab");
+      const tabContents = document.querySelectorAll(".tab-content");
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+          // Remove active class from all tabs and tab contents
+          tabs.forEach((t) => t.classList.remove("active"));
+          tabContents.forEach((content) => content.classList.remove("active"));
+
+          // Add active class to clicked tab and corresponding content
+          tab.classList.add("active");
+          document.getElementById(tab.dataset.tab).classList.add("active");
+        });
+      });
+
+    </script>
+  </body>
+</html>
