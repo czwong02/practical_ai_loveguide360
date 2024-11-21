@@ -44,6 +44,8 @@ def index():
 
 @app.route("/process_conflict", methods=["POST"])
 def process_conflict():
+    result = {}
+
     # Retrieve form data
     category = request.form.get("category")
 
